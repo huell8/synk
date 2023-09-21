@@ -1,0 +1,77 @@
+#!/bin/bash
+
+usage() {
+  echo "synk name1 (name2 ...) [up/down]"
+  echo ""
+  echo "for more info use --help"
+}
+moreinfo() {
+  echo "synk name1 (name2 ...) [up/down]"
+  echo "name - is user specified abbrevation for a specific file"
+  echo "up will cause the file to be uploaded to your backup server (will override the old one)"
+  echo "down will cause the file to be downloaded from you backup server (will overide the old one)"
+  exit
+}
+
+# USER CONFIG:
+# backup server address (if needed add username)
+serveraddr="huell8@192.168.0.112"
+declare -a abbrv
+# abbrevations, format:
+# abbrv[0]='abrevation;local_file_path;remote_file_path'
+# abbrv[1]='keys;~/Documents/keychain.kdbx;~/keychain.kdbx'
+abbrv[0]='keys;/home/huell8/Documents/keychain.kdbx;/home/huell8/keychain.kdbx'
+abbrv[1]='hello;/home/huell8/hello.txt;/home/huell8/hello.txt'
+
+direction=${@: -1}
+if [[ $direction == "--help" ]] # $direction here used as last argument
+then
+  moreinfo
+fi
+if [[ $direction != "up" ]] && [[ $direction != "down" ]]
+then
+  usage
+fi
+
+for inp in "$@" # for each argument other than the last one
+do
+  if [[ $inp == $direction ]]
+  then
+    continue
+  fi
+  for t in "${abbrv[@]}" # check for coresponding file
+  do
+    if [[ $t == "$inp;"* ]]
+    then
+      IFS=";" read -r -a arr <<< "${t}"
+      abbrevation=${arr[0]}
+      localpath=${arr[1]}
+      remotepath=${arr[2]}
+      if [[ $direction == "up" ]]
+      then
+        echo -n "uploading *$abbrevation* will couse file override on remote server [Y/n]: "
+        read 
+        if [[ $REPLY == "" ]] || [[ $REPLY == "Y" ]] || [[ $REPLY == "y" ]]
+        then
+          # echo "uploading $localpath to $serveraddr:$remotepath"
+          scp $localpath $serveraddr:$remotepath
+        else
+          echo "stopped"
+        fi
+      fi
+      if [[ $direction == "down" ]]
+      then
+        echo -n "downloading *$abbrevation* will couse file override on this computer [Y/n]: "
+        read 
+        if [[ $REPLY == "" ]] || [[ $REPLY == "Y" ]] || [[ $REPLY == "y" ]]
+        then
+          # echo "uploading $localpath to $serveraddr:$remotepath"
+          scp $serveraddr:$remotepath $localpath
+        else
+          echo "stopped"
+        fi
+      fi
+    fi
+  done
+done
+
