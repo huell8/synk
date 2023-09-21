@@ -15,13 +15,11 @@ moreinfo() {
 
 # USER CONFIG:
 # backup server address (if needed add username)
-serveraddr="huell8@192.168.0.112"
+serveraddr="user@server.address"
 declare -a abbrv
 # abbrevations, format:
 # abbrv[0]='abrevation;local_file_path;remote_file_path'
 # abbrv[1]='keys;~/Documents/keychain.kdbx;~/keychain.kdbx'
-abbrv[0]='keys;/home/huell8/Documents/keychain.kdbx;/home/huell8/keychain.kdbx'
-abbrv[1]='hello;/home/huell8/hello.txt;/home/huell8/hello.txt'
 
 direction=${@: -1}
 if [[ $direction == "--help" ]] # $direction here used as last argument
